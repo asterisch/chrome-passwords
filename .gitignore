@@ -1,1 +1,11 @@
 *.obj
+*.exe
+.vs
+*.sln
+*.vcxproj.filters
+*.vcxproj
+*.vcxproj.user
+chrome_secrets.txt
+cookiesDB
+passwordsDB
+x64
